@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 DATA_FROM = 0
 DATA_TO = 10000
 #FEATURE_SCALE = np.array([[1000, 1000, 1000, 1000, 1000]])
+
 FEATURE_SCALE = 1000
 
 
