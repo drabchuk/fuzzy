@@ -3,6 +3,46 @@ import numpy as np
 
 #Supposed that universum is R
 #is fuzzy singleton by default
+
+class FuzzyBool(object):
+
+    def __init__(self, degree, t_norm):
+        self.degree = degree
+        self.t_norm = t_norm
+
+    def __and__(self, other):
+        if self.t_norm == 'min':
+            return FuzzyBool(
+                degree=np.min((self.degree, other.degree)),
+                t_norm=self.t_norm
+            )
+        elif self.t_norm == 'mult':
+            return FuzzyBool(
+                self.number,
+                degree=self.degree * other.degree,
+                t_norm=self.t_norm
+            )
+        else:
+            raise Exception('t_norm is not specified or unknown try min or mult')
+
+    def __or__(self, other):
+        if self.t_norm == 'min':
+            return FuzzyBool(
+                degree=np.max((self.degree, other.degree)),
+                t_norm=self.t_norm
+            )
+        elif self.t_norm == 'mult':
+            other_mu = other.degree
+            return FuzzySingleton(
+                degree=1.0 - self.degree - other_mu + self.degree * other_mu,
+                t_norm=self.t_norm
+            )
+        else:
+            raise Exception('t_norm is not specified or unknown try min or mult')
+
+    def __invert__(self):
+        return FuzzyBool(degree=1.0 - self.degree, t_norm=self.t_norm)
+
 class FuzzyNumber(object):
 
     def __init__(self, number, t_norm='min'):
@@ -11,6 +51,9 @@ class FuzzyNumber(object):
 
     def mu(self, x):
         return 1.0 if x == self.number else 0.0
+
+    def has(self, x):
+        return FuzzyBool(degree=self.mu(x), t_norm=self.t_norm)
 
     def __and__(self, other):
         raise NotImplementedError()
@@ -35,7 +78,7 @@ class FuzzySingleton(FuzzyNumber):
         if self.t_norm == 'min':
             return FuzzySingleton(
                 self.number,
-                degree=np.min(self.degree, other.mu(self.number)),
+                degree=np.min((self.degree, other.mu(self.number))),
                 t_norm=self.t_norm
             )
         elif self.t_norm == 'mult':
@@ -51,7 +94,7 @@ class FuzzySingleton(FuzzyNumber):
         if self.t_norm == 'min':
             return FuzzySingleton(
                 self.number,
-                degree=np.max(self.degree, other.mu(self.number)),
+                degree=np.max((self.degree, other.mu(self.number))),
                 t_norm=self.t_norm
             )
         elif self.t_norm == 'mult':
@@ -95,10 +138,10 @@ class TriangularFuzzyNumber(FuzzyNumber):
         self.right = right
 
     def mu(self, x):
-        return np.max(0.0,
+        return np.max((0.0,
                       (x - self.left) / (self.number - self.left)
                       if x < self.number else
-                      (self.right - x) / (self.right - self.number))
+                      (self.right - x) / (self.right - self.number)))
 
     def __and__(self, other):
         raise NotImplementedError()
