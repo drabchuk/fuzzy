@@ -18,7 +18,6 @@ class FuzzyBool(object):
             )
         elif self.t_norm == 'mult':
             return FuzzyBool(
-                self.number,
                 degree=self.degree * other.degree,
                 t_norm=self.t_norm
             )
